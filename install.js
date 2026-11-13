@@ -3,6 +3,7 @@
 // worker registration so the app works offline.
 // ============================================================
 
+(function () {
 let deferredPrompt = null;
 
 const $id = (id) => document.getElementById(id);
@@ -66,3 +67,4 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
+})();

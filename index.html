@@ -11,7 +11,7 @@
   <!-- ==========================================
        APPLE TOUCH ICON (iPhone/iPad home screen)
   ========================================== -->
-  <link rel="apple-touch-icon" href="PDF-192.ico" />
+  <link rel="apple-touch-icon" href="PDF-192.png" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#1a1a2e" />
   <link rel="stylesheet" href="style.css" />
@@ -30,6 +30,9 @@ svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
 .btn{height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--b);background:var(--p);cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .btn:hover{background:var(--p2)}.btn.pri{background:var(--a);border-color:var(--a);color:#fff;font-weight:600}.btn.pri:hover{background:var(--ah)}
 .ib{width:36px;height:36px;padding:0;justify-content:center}
+#install-container{flex:none}
+#top .install-button{height:36px;padding:0 12px;font-size:13px;border-width:1.5px;border-radius:8px;letter-spacing:0;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(233,69,96,.3)}
+@media(max-width:820px){#install-btn .itxt{display:none}#top .install-button{padding:0 10px;font-size:16px}}
 .seg{display:inline-flex;border:1px solid var(--b);border-radius:8px;overflow:hidden;background:var(--p);flex:none}
 .seg button{height:34px;min-width:34px;padding:0 9px;border:0;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
 .seg button+button{border-left:1px solid var(--b)}.seg button:hover{background:var(--p2)}.seg button.on{background:var(--al);color:var(--a)}
@@ -86,6 +89,7 @@ label.chk{display:inline-flex;gap:6px;align-items:center;color:var(--m);cursor:p
 <div id="app">
 <header id="top"><button class="btn ib only-m" onclick="$('#side').classList.toggle('open')" title="Pages" data-ic="pages"></button>
 <div class="brand"><span class="logo">PDF</span><span id="fname">PDF Editor</span></div><div class="grow"></div>
+<div id="install-container"><button id="install-btn" class="install-button" type="button" title="Install app"><span>📲</span><span class="itxt">Install</span></button></div>
 <div class="seg"><button onclick="undo()" title="Undo (Ctrl+Z)" data-ic="undo"></button><button onclick="redo()" title="Redo (Ctrl+Y)" data-ic="redo"></button></div>
 <div class="seg hm"><button onclick="zm(.8)" title="Zoom out" data-ic="minus"></button><button id="zl" onclick="fit()" title="Fit width" style="min-width:56px">100%</button><button onclick="zm(1.25)" title="Zoom in" data-ic="plus"></button></div>
 <button class="btn hm" onclick="fi.click()"><i data-ic="folder"></i>Open</button>

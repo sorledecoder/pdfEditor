@@ -1,6 +1,6 @@
-// sw.js — caches the app shell so ScanEditor opens fully offline.
+// sw.js — caches the app shell so PDF Editor opens fully offline.
 // Bump CACHE whenever you upload a new index.html so users get the update.
-const CACHE = 'pdfeditor-v2';
+const CACHE = 'pdfeditor-v3';
 const SHELL = [
   './',
   './index.html',
@@ -8,9 +8,8 @@ const SHELL = [
   './install.js',
   './manifest.json',
   './PDF.ico',
-  './PDF-192.ico',
-  './icon-192.png',
-  './icon-512.png'
+  './PDF-192.png',
+  './PDF-512.png'
 ];
 
 self.addEventListener('install', (e) => {
