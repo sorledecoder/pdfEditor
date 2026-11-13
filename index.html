@@ -2,6 +2,20 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <title>PDF Editor</title>
+<!-- ==========================================
+       FAVICON / BROWSER TAB ICON (OIP logo)
+  ========================================== -->
+  <link rel="icon" type="image/png" href="PDF.ico" />
+  <link rel="shortcut icon" type="image/png" href="PDF.ico" />
+
+  <!-- ==========================================
+       APPLE TOUCH ICON (iPhone/iPad home screen)
+  ========================================== -->
+  <link rel="apple-touch-icon" href="PDF-192.ico" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="install.js"></script>
 <style>
 :root{--bg:#e8ebf0;--p:#fff;--p2:#f4f6f9;--b:#dfe3ea;--t:#1c2330;--m:#6b7587;--a:#2563eb;--ah:#1d4ed8;--al:#2563eb1a;--r:10px;--sh:0 1px 2px #1c233014,0 4px 14px #1c23301a}
 @media (prefers-color-scheme:dark){:root{--bg:#10141b;--p:#1a2029;--p2:#222a36;--b:#2e3846;--t:#e7ecf3;--m:#93a0b4;--a:#4f8cff;--ah:#6a9fff;--al:#4f8cff26;--sh:0 1px 2px #0006,0 6px 18px #0006}}
@@ -56,6 +70,9 @@ label.chk{display:inline-flex;gap:6px;align-items:center;color:var(--m);cursor:p
 .modal .row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap;align-items:center}
 #pad{width:100%;background:#fff;border:1px solid var(--b);border-radius:10px;touch-action:none;display:block}
 .only-m{display:none}
+#dlg{align-items:flex-end;background:transparent;pointer-events:none;padding:0 10px calc(10px + env(safe-area-inset-bottom,0px));z-index:25}#dlg .modal{pointer-events:auto;box-shadow:0 -6px 30px #0005;border:1px solid var(--b)}#dta{height:92px;white-space:pre;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px}.mh{display:flex;align-items:center;justify-content:space-between;cursor:grab;touch-action:none;margin:-4px -4px 6px;padding:4px}.mh h3{margin:0}.mh span{color:var(--m);letter-spacing:2px;font-size:11px}
+.dinfo{font-size:12px;color:var(--m);margin:-4px 0 8px}.dinfo a{color:var(--a);cursor:pointer;text-decoration:underline}.dinfo:empty{display:none}
+.frow{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid var(--b);font-size:13px}.frow span{color:var(--m);text-align:right}
 @media(max-width:820px){
  .only-m{display:inline-flex}#fname{max-width:22vw}.logo{display:none}
  #body{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto}
@@ -64,6 +81,7 @@ label.chk{display:inline-flex;gap:6px;align-items:center;color:var(--m);cursor:p
  #side{position:absolute;left:0;top:0;bottom:0;width:190px;z-index:6;transform:translateX(-102%);transition:transform .2s;box-shadow:var(--sh)}#side.open{transform:none}
  .hm{display:none}#top{gap:6px;padding-left:8px;padding-right:8px}
 }
+.sw{width:24px;height:24px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--b);padding:0;cursor:pointer;flex:none}
 </style></head><body>
 <div id="app">
 <header id="top"><button class="btn ib only-m" onclick="$('#side').classList.toggle('open')" title="Pages" data-ic="pages"></button>
@@ -81,10 +99,10 @@ label.chk{display:inline-flex;gap:6px;align-items:center;color:var(--m);cursor:p
 <main id="stage"><div id="empty"><i data-ic="file"></i><h2>Open a PDF to start</h2><p>Edit text, swap images, sign, remove watermarks. Everything stays on your device and works offline.</p><button class="btn pri" onclick="fi.click()">Choose PDF</button></div><canvas id="cv" hidden></canvas></main>
 <div id="card"></div></div></div>
 <div id="toast"></div>
-<div id="dlg"><div class="modal"><h3 id="dt">Edit text</h3><textarea id="dta" spellcheck="false"></textarea><div class="row"><span class="m" style="color:var(--m);margin-right:auto;font-size:12px">Ctrl+Enter to apply</span><button class="btn" onclick="dlgDone(null)">Cancel</button><button class="btn pri" onclick="dlgDone($('#dta').value)">Apply</button></div></div></div>
+<div id="dlg"><div class="modal" id="dm"><div class="mh" id="dh"><h3 id="dt">Edit text</h3><span>⠿ drag</span></div><div id="dinfo" class="dinfo"></div><textarea id="dta" spellcheck="false"></textarea><div class="row"><span style="color:var(--m);margin-right:auto;font-size:12px">Live on the page · drag the page box or this panel · spaces are kept exactly · Ctrl+Enter applies</span><button class="btn" onclick="dlgDone(null)">Cancel</button><button class="btn pri" onclick="dlgDone($('#dta').value)">Apply</button></div></div></div>
 <div id="sg"><div class="modal"><h3>New signature</h3><canvas id="pad" width="800" height="300"></canvas>
 <div class="row" style="justify-content:flex-start"><input type="color" id="ink" value="#10206b" title="Ink color"><button class="btn" onclick="padClear()">Clear</button><button class="btn" onclick="si.click()"><i data-ic="image"></i>From photo</button><span class="grow"></span><button class="btn" onclick="$('#sg').classList.remove('show')">Close</button><button class="btn pri" onclick="padSave()">Save</button></div></div></div>
-<input type="file" id="fi" accept=".pdf,application/pdf" hidden><input type="file" id="pf" accept="image/*" hidden><input type="file" id="si" accept="image/*" hidden>
+<input type="file" id="fi" accept=".pdf,application/pdf" hidden><input type="file" id="pf" accept="image/*" hidden><input type="file" id="si" accept="image/*" hidden><input type="file" id="ffi" accept=".ttf,.otf,.woff" multiple hidden>
 <script>/**
  * @licstart The following is the entire license notice for the
  * JavaScript code in this page
@@ -165,7 +183,7 @@ function removeAnnotsDoc(d){const L=PDFLib;let n=0;for(const p of d.getPages()){
 <script>
 const $=s=>document.querySelector(s),L=PDFLib,S=2;
 const IC={pages:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/>',undo:'<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>',redo:'<path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/>',minus:'<path d="M5 12h14"/>',plus:'<path d="M5 12h14M12 5v14"/>',folder:'<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/>',download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',up:'<path d="m18 15-6-6-6 6"/>',down:'<path d="m6 9 6 6 6-6"/>',trash:'<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5"/>',file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/>',
- pan:'<path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',sel:'<path d="M4 4l7 16 2.5-6.5L20 11z"/>',edit:'<path d="M12 20h9"/><path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7.4 18.6 3 20l1.4-4.4z"/>',text:'<path d="M4 7V4h16v3M9 20h6M12 4v16"/>',erase:'<path d="m7 21-4.3-4.3a2 2 0 0 1 0-2.8l9.6-9.6a2 2 0 0 1 2.8 0l5.6 5.6a2 2 0 0 1 0 2.8L13 21M22 21H7M5 11l9 9"/>',image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>',sig:'<path d="M3 18c2-6 4-9 5-9s0 5 2 5 3-4 4-4 1 3 3 3 2-1 4-1"/><path d="M3 21h18"/>',wm:'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>'};
+ pan:'<path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',sel:'<path d="M4 4l7 16 2.5-6.5L20 11z"/>',edit:'<path d="M12 20h9"/><path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7.4 18.6 3 20l1.4-4.4z"/>',text:'<path d="M4 7V4h16v3M9 20h6M12 4v16"/>',erase:'<path d="m7 21-4.3-4.3a2 2 0 0 1 0-2.8l9.6-9.6a2 2 0 0 1 2.8 0l5.6 5.6a2 2 0 0 1 0 2.8L13 21M22 21H7M5 11l9 9"/>',image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>',sig:'<path d="M3 18c2-6 4-9 5-9s0 5 2 5 3-4 4-4 1 3 3 3 2-1 4-1"/><path d="M3 21h18"/>',pen:'<path d="M3 21l3.5-1L19 7.5 16.5 5 4 17.5z"/><path d="M14 7l3 3"/>',shape:'<rect x="3" y="4" width="11" height="11" rx="1.5"/><circle cx="16" cy="16" r="5"/>',wm:'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>'};
 const ic=n=>`<svg viewBox="0 0 24 24">${IC[n]||''}</svg>`;document.querySelectorAll('[data-ic]').forEach(e=>e.innerHTML=ic(e.dataset.ic));
 const cv=$('#cv'),cx=cv.getContext('2d'),fi=$('#fi'),pf=$('#pf'),si=$('#si'),pad=$('#pad'),pg=pad.getContext('2d');
 /* ---- fonts ---- */
@@ -175,13 +193,30 @@ const FILES=JSON.parse($('#fonts').textContent||'{}'),FAM={
  Courier:{std:['Courier','CourierBold','CourierOblique','CourierBoldOblique'],css:'"Courier New",Courier,monospace'},
  Roboto:{css:'Roboto,sans-serif'},'Open Sans':{css:'"Open Sans",sans-serif'},Lora:{css:'Lora,serif'},'Roboto Mono':{css:'"Roboto Mono",monospace'},'Dancing Script':{css:'"Dancing Script",cursive',noI:1}};
 const b64=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
-const hasI=f=>!FAM[f].noI;
+const hasI=f=>!FAM[f].noI,hasB=f=>!FAM[f].noB;
 const fk=(b,i)=>b&&i?'bi':b?'b':i?'i':'r';
 const fileOf=(f,b,i)=>{const F=FILES[f];return F&&(F[fk(b,i&&hasI(f))]||F[b?'b':'r']||F.r)};
-const fcss=o=>`${o.i&&hasI(o.f)?'italic ':''}${o.b?'bold ':''}${o.size*S}px ${FAM[o.f].css}`;
+const fcss=o=>`${o.i&&hasI(o.f)?'italic ':''}${o.b&&hasB(o.f)?'bold ':''}${o.size*S}px ${FAM[o.f].css}`;
+const nrm=s=>String(s).toLowerCase().replace(/[^a-z0-9]/g,''),STY=/(bold|italic|oblique|regular|roman|normal|medium|light|semibold|demi|black|heavy|psmt|mt|ps)/gi;
+function mapFont(raw,fam0){const orig=String(raw||'').replace(/^[A-Z]{6}\+/,''),low=orig.toLowerCase(),b=/bold|black|heavy|semibold|demi/.test(low),i=/italic|oblique/.test(low),base=nrm(orig.replace(STY,''));
+ if(orig){for(const k in FAM)if(FAM[k].custom&&(nrm(k)==nrm(orig)||nrm(k.replace(STY,''))==base))return{f:k,b:false,i:false,exact:true,orig}}
+ let f=fam0;const m=r=>r.test(low);
+ if(m(/courier/))f='Courier';else if(m(/mono|consolas|menlo|monaco|lucida.?console/))f='Roboto Mono';else if(m(/roboto/))f='Roboto';
+ else if(m(/script|brush|handwrit|cursive|dancing|chancery/))f='Dancing Script';
+ else if(m(/opensans|open.?sans|calibri|carlito|segoe|verdana|tahoma|trebuchet|lato|notosans|noto.?sans|sourcesans|myriad|frutiger|candara|corbel/))f='Open Sans';
+ else if(m(/arial|helvetica|liberation.?sans|arimo|nimbus.?sans|swiss/))f='Helvetica';
+ else if(m(/georgia|cambria|garamond|palatino|bookman|book.?antiqua|lora|merriweather|minion|caslon|baskerville|constantia/))f='Lora';
+ else if(m(/times|liberation.?serif|tinos|nimbus.?rom|serif/)&&!m(/sans/))f='Times';
+ return{f,b,i,exact:false,orig}}
+async function regFont(name,bytes,save){const ff=new FontFace(name,bytes.slice().buffer);await ff.load();document.fonts.add(ff);FAM[name]={css:`"${name}",sans-serif`,noI:1,noB:1,custom:1,bytes};if(save)idbPut(name,bytes)}
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open('pdfed',1);r.onupgradeneeded=()=>r.result.createObjectStore('fonts');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const rq=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+async function idbPut(n,b){try{(await idb()).transaction('fonts','readwrite').objectStore('fonts').put(b,n)}catch(e){}}
+async function loadUserFonts(){try{const st=(await idb()).transaction('fonts').objectStore('fonts'),ks=await rq(st.getAllKeys()),vs=await rq(st.getAll());for(let i=0;i<ks.length;i++)await regFont(ks[i],vs[i],false)}catch(e){}}
+$('#ffi').onchange=async e=>{const fs=[...e.target.files];let n=0;for(const f of fs){try{await regFont(f.name.replace(/\.[^.]+$/,''),new Uint8Array(await f.arrayBuffer()),true);n++}catch(er){toast('Could not read font '+f.name,4000)}}e.target.value='';if(n){fc={};toast(n+' font(s) added. Matching text now uses them.');await show()}opts()};
 async function loadFonts(){try{const ps=[];for(const f in FILES)for(const k in FILES[f]){const ff=new FontFace(f,b64(FILES[f][k]),{weight:k[0]=='b'?'700':'400',style:k.includes('i')?'italic':'normal'});document.fonts.add(ff);ps.push(ff.load())}await Promise.all(ps)}catch(e){}}
 /* ---- state ---- */
-let bytes=null,fname='',pdfDoc=null,pages=[],cur=0,tool='sel',sel=null,drag=null,zoom=1,bg=null,items=[],tok=0,sigs=[],aSig=null,allp=false,pend=null,cands=[],fc={},lastSnap=[null,0],lastTap={};
+let showFonts=false,bytes=null,fname='',pdfDoc=null,pages=[],cur=0,tool='sel',sel=null,drag=null,zoom=1,bg=null,items=[],tok=0,sigs=[],aSig=null,allp=false,pend=null,cands=[],fc={},lastSnap=[null,0],lastTap={};
 const td={c:'#000000',f:'Helvetica',b:false,i:false,u:false,size:12};
 try{sigs=JSON.parse(localStorage.getItem('sigs2')||'[]')}catch(e){}
 try{pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([$('#wk').textContent],{type:'text/javascript'}))}catch(e){}
@@ -191,10 +226,10 @@ const E=()=>pages[cur],sc=()=>cv.width/cv.getBoundingClientRect().width;
 const pos=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*cv.width/r.width/S,y:(e.clientY-r.top)*cv.height/r.height/S}};
 const nr=(a,b)=>({x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(a.x-b.x),h:Math.abs(a.y-b.y)});
 const hex=a=>'#'+a.map(v=>Math.round(v).toString(16).padStart(2,'0')).join('');
-let dlgDone=()=>{};
-function askText(title,val){return new Promise(res=>{$('#dt').textContent=title;const ta=$('#dta');ta.value=val||'';$('#dlg').classList.add('show');setTimeout(()=>{ta.focus();ta.select()},60);dlgDone=v=>{$('#dlg').classList.remove('show');res(v)}})}
+let dlgDone=()=>{};const dlgOpen=()=>$('#dlg').classList.contains('show'),esc=s=>String(s).replace(/[<>&"]/g,'');
+function askText(title,val,o={}){return new Promise(res=>{$('#dt').textContent=title;$('#dinfo').innerHTML=o.info||'';const ta=$('#dta');ta.value=val||'';ta.oninput=()=>o.live&&o.live(ta.value);$('#dlg').classList.add('show');setTimeout(()=>{ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length)},60);dlgDone=v=>{$('#dlg').classList.remove('show');res(v)}})}
+(()=>{const h=$('#dh'),m=$('#dm');let s=null,ox=0,oy=0;h.onpointerdown=e=>{s={x:e.clientX,y:e.clientY,ox,oy};h.setPointerCapture(e.pointerId)};h.onpointermove=e=>{if(!s)return;ox=s.ox+e.clientX-s.x;oy=s.oy+e.clientY-s.y;m.style.transform=`translate(${ox}px,${oy}px)`};h.onpointerup=()=>s=null})();
 $('#dta').onkeydown=e=>{if(e.key=='Enter'&&(e.ctrlKey||e.metaKey))dlgDone($('#dta').value);if(e.key=='Escape')dlgDone(null)};
-const HS=[[0,0],[1,0],[0,1],[1,1]];
 /* ---- pixels ---- */
 const cl=(v,m)=>Math.max(0,Math.min(m-1,Math.round(v)));
 function bgRect(r){const g=G(bg),m=4,ch=[[],[],[]];for(let i=0;i<=8;i++){const fx=r.x+r.w*i/8,fy=r.y+r.h*i/8;[[fx,r.y-m],[fx,r.y+r.h+m],[r.x-m,fy],[r.x+r.w+m,fy]].forEach(([x,y])=>{const d=g.getImageData(cl(x,bg.width),cl(y,bg.height),1,1).data;for(let k=0;k<3;k++)ch[k].push(d[k])})}return ch.map(a=>{a.sort((p,q)=>p-q);return a[a.length>>1]})}
@@ -202,24 +237,139 @@ function inkColor(r){const x=cl(r.x,bg.width),y=cl(r.y,bg.height),d=G(bg).getIma
 /* ---- load / render ---- */
 async function loadBytes(b){bytes=b;fc={};pdfDoc=await pdfjsLib.getDocument({data:b.slice()}).promise}
 fi.onchange=async()=>{const f=fi.files[0];if(!f)return;toast('Opening…',0);try{fname=f.name.replace(/\.pdf$/i,'');$('#fname').textContent=f.name;await loadBytes(new Uint8Array(await f.arrayBuffer()));pages=[];for(let i=1;i<=pdfDoc.numPages;i++){const p=await pdfDoc.getPage(i),v=p.view;pages.push({src:i-1,w:v[2]-v[0],h:v[3]-v[1],ops:[],undo:[],redo:[],th:null});if(p.rotate)toast('Rotated pages may misalign edits',4000)}cur=0;sel=null;fi.value='';await show();thumbs();if(!$('#toast').textContent.startsWith('Rotated'))toast('Opened',900)}catch(e){toast('Could not open: '+e.message,5000)}};
-function finfo(p,fn,fam0){const k=fn;if(fc[k])return fc[k];let nm='';try{nm=p.commonObjs.get(fn).name||''}catch(e){}let f=fam0;if(/mono|courier|consolas|menlo/i.test(nm))f='Courier';else if(/times|georgia|garamond|palatino|serif|cambria|minion|lora/i.test(nm)&&!/sans/i.test(nm))f='Times';return fc[k]={b:/bold|black|heavy|semibold|demi/i.test(nm),i:/italic|oblique/i.test(nm),f}}
+function finfo(p,fn,fam0){if(fc[fn])return fc[fn];let nm='';try{nm=p.commonObjs.get(fn).name||''}catch(e){}if(/^g_d\d+_f\d+$/.test(nm))nm='';return fc[fn]=mapFont(nm,fam0)}
 async function show(){const e=E(),t=++tok;if(!e){bg=null;draw();opts();return}let b,it=[];
  if(e.src==null){b=mk(e.w*S|0,e.h*S|0);const g=b.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,b.width,b.height)}
  else{const p=await pdfDoc.getPage(e.src+1),vp=p.getViewport({scale:S});b=mk(vp.width|0,vp.height|0);const g=b.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,b.width,b.height);await p.render({canvasContext:g,viewport:vp}).promise;
-  const tc=await p.getTextContent();for(const i of tc.items){if(!i.str||!i.str.trim())continue;const m=pdfjsLib.Util.transform(vp.transform,i.transform),size=Math.hypot(m[2],m[3]);if(Math.abs(m[1])>.02*size)continue;const fam=(tc.styles[i.fontName]||{}).fontFamily||'',f0=/serif$/.test(fam)&&!/sans/.test(fam)?'Times':/mono/.test(fam)?'Courier':'Helvetica',fi_=finfo(p,i.fontName,f0);it.push({str:i.str,x:m[4],base:m[5],size,w:i.width*S,fam:fi_.f,b:fi_.b,i:fi_.i})}}
+  const tc=await p.getTextContent();for(const i of tc.items){if(!i.str||!i.str.trim())continue;const m=pdfjsLib.Util.transform(vp.transform,i.transform),size=Math.hypot(m[2],m[3]);if(Math.abs(m[1])>.02*size)continue;const fam=(tc.styles[i.fontName]||{}).fontFamily||'',f0=/serif$/.test(fam)&&!/sans/.test(fam)?'Times':/mono/.test(fam)?'Courier':'Helvetica',fi_=finfo(p,i.fontName,f0);it.push({str:i.str,x:m[4],base:m[5],size,w:i.width*S,fam:fi_.f,b:fi_.b,i:fi_.i,orig:fi_.orig,exact:fi_.exact})}}
  if(t!=tok)return;bg=b;items=it;sel=null;draw();opts();markThumbs()}
 function wrapT(txt,bw,mw){const out=[];for(const para of txt.split('\n')){if(!bw){out.push(para);continue}let c='';for(const w of para.split(/(\s+)/)){const t=c+w;if(!c.trim()||mw(t.trimEnd())<=bw)c=t;else{out.push(c.trimEnd());c=w.trimStart()}}out.push(c.trimEnd())}return out}
 function tm(o){if(o.k!='text')return;cx.font=fcss(o);const mw=s=>cx.measureText(s).width/S;o.L=wrapT(o.txt,o.bw,mw);o.w=o.bw||Math.max(...o.L.map(mw));o.h=o.L.length*o.size*1.2}
-const hpts=o=>{const p=HS.map(([fx,fy])=>[o.x+fx*o.w,o.y+fy*o.h]);if(o.k=='text'){const off=16*sc()/S;p.push([o.x-off,o.y+o.h/2],[o.x+o.w+off,o.y+o.h/2])}return p};
+
 function itemAt(q){return items.find(i=>q.x*S>=i.x-2&&q.x*S<=i.x+i.w+2&&q.y*S>=i.base-i.size&&q.y*S<=i.base+i.size*.3)}
 function lineOf(it){const row=items.filter(i=>Math.abs(i.base-it.base)<it.size*.4).sort((a,b)=>a.x-b.x);let a=row.indexOf(it),b=a;while(a>0&&row[a].x-(row[a-1].x+row[a-1].w)<it.size*1.2)a--;while(b<row.length-1&&row[b+1].x-(row[b].x+row[b].w)<it.size*1.2)b++;return row.slice(a,b+1)}
-function makeBox(its){const e=E(),x0=Math.min(...its.map(i=>i.x)),x1=Math.max(...its.map(i=>i.x+i.w)),y0=Math.min(...its.map(i=>i.base-i.size*.85)),y1=Math.max(...its.map(i=>i.base+i.size*.25)),u={x:x0-1,y:y0,w:x1-x0+2,h:y1-y0},f=its[0],c=hex(bgRect(u)),ink=inkColor(u);e.ops.push({k:'cover',x:u.x/S,y:u.y/S,w:u.w/S,h:u.h/S,c});const op={k:'text',txt:its.map(i=>i.str).join(''),x:x0/S,y:(f.base-f.size*.8)/S,size:f.size/S,c:ink,f:f.fam,b:f.b,i:f.i,u:false};e.ops.push(op);return op}
+const SP=.27;
+function lineText(row){let s='';row.forEach((it,k)=>{if(k){const p=row[k-1],gap=it.x-(p.x+p.w);if(gap>p.size*SP*.6&&!/\s$/.test(s)&&!/^\s/.test(it.str))s+=' '.repeat(Math.min(40,Math.max(1,Math.round(gap/(p.size*SP)))))}s+=it.str});return s}
+function makeBox0(its){const e=E();its=[...its].sort((a,b)=>a.base-b.base||a.x-b.x);const ls=[];its.forEach(i=>{const l=ls.find(l=>Math.abs(l.b-i.base)<i.size*.4);l?l.a.push(i):ls.push({b:i.base,a:[i]})});ls.forEach(l=>l.a.sort((a,b)=>a.x-b.x));
+ const x0=Math.min(...its.map(i=>i.x)),x1=Math.max(...its.map(i=>i.x+i.w)),y0=Math.min(...its.map(i=>i.base-i.size*.85)),y1=Math.max(...its.map(i=>i.base+i.size*.25)),u={x:x0-1,y:y0,w:x1-x0+2,h:y1-y0},f=its[0],c=hex(bgRect(u)),ink=inkColor(u);
+ const txt=ls.map(l=>' '.repeat(Math.max(0,Math.round((l.a[0].x-x0)/(f.size*SP))))+lineText(l.a)).join('\n');
+ e.ops.push({k:'cover',x:u.x/S,y:u.y/S,w:u.w/S,h:u.h/S,c});const op={k:'text',txt,x:x0/S,y:(f.base-f.size*.8)/S,size:f.size/S,c:ink,f:f.fam,b:f.b,i:f.i,u:false,orig:f.orig,exact:f.exact};e.ops.push(op);return op}
+function makeBox(its){const op=makeBox0(its),e=E(),cov=e.ops[e.ops.indexOf(op)-1];if(cov&&cov.k=='cover'&&its.every(i=>items.filter(j=>j.str==i.str).length==1))cov.kill=its.map(i=>i.str);return op}
+function infoOf(o){if(!o||!o.orig)return'';const F=o.exact?'matched exactly':'closest available: <b>'+esc(o.f)+(o.b?' Bold':'')+(o.i?' Italic':'')+'</b>';return`Original font: <b>${esc(o.orig)}</b> · ${F}${o.exact?'':` · <a onclick="$('#ffi').click()">add the exact font file</a>`}`}
+async function editOp(op){const e=E(),mark=e.undo.length;sel=op;opts();draw();
+ const nt=await askText('Edit text',op.txt,{live:v=>{op.txt=v;draw()},info:infoOf(op)});
+ if(nt===null){if(mark>0){e.ops=e.undo[mark-1];e.undo.length=mark-1}sel=null}
+ else if(!nt.trim()){e.ops=e.ops.filter(o=>o!==op);sel=null}else{op.txt=nt;sel=op}
+ opts();draw()}
+async function editItems(its){snap();const op=makeBox(its);await editOp(op)}
+let trEdit=true;const WRAP=true;
+function appConvert(q){const it=itemAt(q);if(it){snap();const o=makeBox(lineOf(it));toast('Text is now a movable box',1600);return o}return null}
+function makeBox0_(){}
+/* ===== shared object engine: rotate/resize handles, pencil, shapes, property bar ===== */
+const D2R=Math.PI/180,rotP=(x,y,a)=>[x*Math.cos(a)-y*Math.sin(a),x*Math.sin(a)+y*Math.cos(a)];
+const RA=o=>(o.a||0)*D2R,ctr=o=>[o.x+o.w/2,o.y+o.h/2],unit=()=>typeof UNITF=='function'?UNITF():1;
+const pen={c:'#10206b',w:2.2,mode:'pen'},shp={t:'rect',c:'#e11d48',lw:2,fill:false};
+const fcssU=o=>`${o.i&&hasI(o.f)?'italic ':''}${o.b&&hasB(o.f)?'bold ':''}${o.size}px ${(FAM[o.f]||FAM.Helvetica).css}`;
+function toLoc(o,q){const[a,b]=ctr(o),[x,y]=rotP(q.x-a,q.y-b,-RA(o));return{x:x+o.w/2,y:y+o.h/2}}
+function toGlob(o,lx,ly){const[a,b]=ctr(o),[x,y]=rotP(lx-o.w/2,ly-o.h/2,RA(o));return{x:a+x,y:b+y}}
+function inObj(o,q){tm(o);const l=toLoc(o,q),p=o.k=='ink'?Math.max(o.lw||2,5*unit()):0;return l.x>=-p&&l.x<=o.w+p&&l.y>=-p&&l.y<=o.h+p}
+function hlocs(o){const k=16*sc()/S,p=[[0,0],[o.w,0],[0,o.h],[o.w,o.h],null,null,null];if(o.k=='text'&&WRAP){p[4]=[-k,o.h/2];p[5]=[o.w+k,o.h/2]}if(o.k!='cover')p[6]=[o.w/2,-k*1.7];return p}
+const hpts=o=>hlocs(o).map(l=>l&&toGlob(o,l[0],l[1]));
+function handleAt(q,o){tm(o);const r=13*sc()/S,p=hpts(o);for(let i=0;i<7;i++)if(p[i]&&Math.hypot(q.x-p[i].x,q.y-p[i].y)<r)return i;return-1}
+function hoverCur(q,p){if(tool=='pen'||tool=='shape')return'crosshair';if(tool!='sel'&&tool!='edit')return null;if(sel&&p.ops.includes(sel)){const h=handleAt(q,sel);if(h>=0)return h==6?'grab':h>3?'ew-resize':(h==0||h==3?'nwse-resize':'nesw-resize')}return[...p.ops].some(o=>!(tool=='edit'&&o.k=='cover')&&inObj(o,q))?'move':null}
+function pathInk(c,o){const P=o.pts.map(p=>[p[0]*o.w,p[1]*o.h]);c.beginPath();if(P.length==1){c.arc(P[0][0],P[0][1],(o.lw||2)/2,0,7);return}c.moveTo(P[0][0],P[0][1]);for(let i=1;i<P.length-1;i++){c.quadraticCurveTo(P[i][0],P[i][1],(P[i][0]+P[i+1][0])/2,(P[i][1]+P[i+1][1])/2)}c.lineTo(P.at(-1)[0],P.at(-1)[1])}
+function drawObj(c,o){c.save();c.globalAlpha=o.op==null?1:o.op;
+ if(o.k=='cover'){c.fillStyle=o.c;c.fillRect(o.x*S,o.y*S,o.w*S,o.h*S);c.restore();return}
+ tm(o);const[a,b]=ctr(o);c.translate(a*S,b*S);c.rotate(RA(o));c.scale(S,S);c.translate(-o.w/2,-o.h/2);
+ if(o.k=='text'){if(o.bg){const p=o.size*.15;c.fillStyle=o.bg;c.fillRect(-p,-p*.4,o.w+2*p,o.h+p*.8)}c.fillStyle=o.c;c.font=fcssU(o);c.textBaseline='alphabetic';o.L.forEach((l,i)=>{const by=o.size*.8+i*o.size*1.2;c.fillText(l,0,by);if(o.u)c.fillRect(0,by+o.size*.1,c.measureText(l).width,Math.max(.5,o.size*.06))})}
+ else if(o.k=='img')c.drawImage(o.im,0,0,o.w,o.h);
+ else if(o.k=='ink'){c.strokeStyle=o.c;c.fillStyle=o.c;c.lineWidth=o.lw;c.lineCap=o.hl?'butt':'round';c.lineJoin='round';pathInk(c,o);if(o.pts.length>1)c.stroke();else c.fill();
+  if(o.arrow&&o.pts.length==2){const P=o.pts.map(p=>[p[0]*o.w,p[1]*o.h]),an=Math.atan2(P[1][1]-P[0][1],P[1][0]-P[0][0]),Ln=Math.max(o.lw*4,9*unit());c.beginPath();c.moveTo(P[1][0]-Ln*Math.cos(an-.45),P[1][1]-Ln*Math.sin(an-.45));c.lineTo(P[1][0],P[1][1]);c.lineTo(P[1][0]-Ln*Math.cos(an+.45),P[1][1]-Ln*Math.sin(an+.45));c.stroke()}}
+ else if(o.k=='shape'){c.lineWidth=o.lw;c.strokeStyle=o.c;c.beginPath();if(o.shape=='ellipse')c.ellipse(o.w/2,o.h/2,Math.max(.1,o.w/2-o.lw/2),Math.max(.1,o.h/2-o.lw/2),0,0,7);else c.rect(o.lw/2,o.lw/2,Math.max(.1,o.w-o.lw),Math.max(.1,o.h-o.lw));if(o.fill){c.fillStyle=o.fill;c.fill()}c.stroke()}
+ c.restore()}
+function drawSel(c,o){tm(o);const k=sc(),[a,b]=ctr(o);c.save();c.translate(a*S,b*S);c.rotate(RA(o));c.translate(-o.w*S/2,-o.h*S/2);c.setLineDash([6*k,4*k]);c.strokeStyle='#2563eb';c.lineWidth=1.5*k;c.strokeRect(0,0,o.w*S,o.h*S);c.setLineDash([]);
+ hlocs(o).forEach((p,i)=>{if(!p)return;const r=6*k,x=p[0]*S,y=p[1]*S;c.fillStyle='#fff';if(i==6){c.beginPath();c.moveTo(o.w*S/2,0);c.lineTo(x,y+r);c.stroke();c.beginPath();c.arc(x,y,r*1.15,0,7);c.fill();c.stroke();return}c.fillRect(x-r,y-r,2*r,2*r);c.strokeRect(x-r,y-r,2*r,2*r)});c.restore()}
+function mkInk(pts,lw,col,op,hl){const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),pd=lw/2+.5*unit(),x0=Math.min(...xs)-pd,y0=Math.min(...ys)-pd,x1=Math.max(...xs)+pd,y1=Math.max(...ys)+pd;return{k:'ink',x:x0,y:y0,w:x1-x0,h:y1-y0,a:0,c:col,lw,op,hl:hl?1:0,pts:pts.map(p=>[(p[0]-x0)/(x1-x0),(p[1]-y0)/(y1-y0)])}}
+function shapeFrom(a,b){const lw=shp.lw*unit();if(shp.t=='line'||shp.t=='arrow'){const o=mkInk([[a.x,a.y],[b.x,b.y]],lw,shp.c,1,0);o.arrow=shp.t=='arrow';return o}
+ const x=Math.min(a.x,b.x),y=Math.min(a.y,b.y);return{k:'shape',shape:shp.t,x,y,w:Math.max(2,Math.abs(a.x-b.x)),h:Math.max(2,Math.abs(a.y-b.y)),a:0,c:shp.c,lw,fill:shp.fill?shp.c+'55':'',op:1}}
+function drawLive(c){if(!drag)return;
+ if(drag.m=='ink'){const P=drag.pts,w=pen.w*unit()*(drag.hl?6:1);c.save();c.globalAlpha=drag.hl?.35:1;c.strokeStyle=pen.c;c.fillStyle=pen.c;c.lineWidth=w*S;c.lineCap=drag.hl?'butt':'round';c.lineJoin='round';c.beginPath();if(P.length==1)c.arc(P[0][0]*S,P[0][1]*S,w*S/2,0,7);else{c.moveTo(P[0][0]*S,P[0][1]*S);for(let i=1;i<P.length-1;i++)c.quadraticCurveTo(P[i][0]*S,P[i][1]*S,(P[i][0]+P[i+1][0])/2*S,(P[i][1]+P[i+1][1])/2*S);c.lineTo(P.at(-1)[0]*S,P.at(-1)[1]*S)}P.length==1?c.fill():c.stroke();c.restore()}
+ else if(drag.m=='shape'){drawObj(c,shapeFrom(drag.a,drag.b))}}
+function engDown(q){const p=E(),busy=dlgOpen();
+ if(tool=='pen'){snap();drag={m:'ink',pts:[[q.x,q.y]],hl:pen.mode=='hl'};draw();return true}
+ if(tool=='shape'){drag={m:'shape',a:q,b:q};return true}
+ if(!(tool=='sel'||tool=='edit'||busy))return false;const ed=tool!='sel';
+ if(sel&&p.ops.includes(sel)){const h=handleAt(q,sel);if(h>=0){snap();const o=sel;tm(o);const fx=h&1?1:0,fy=h&2?1:0;
+   if(h==6)drag={m:'rot',o};else if(h>3)drag={m:'rw',o,h,A:toGlob(o,h==5?0:o.w,0),off:16*sc()/S};
+   else drag={m:'rs',o,h,fx,fy,A:toGlob(o,(1-fx)*o.w,(1-fy)*o.h),s0:o.size,w0:o.w,b0:o.bw};return true}}
+ const hit=[...p.ops].reverse().find(o=>!((ed||busy)&&o.k=='cover')&&inObj(o,q))||null;
+ if(busy&&hit!==sel)return true;
+ if(!hit&&ed){sel=null;opts();drag={m:'rect',a:q,b:q};draw();return true}
+ sel=hit;let fresh=false;if(sel)snap();else{const o=appConvert(q);if(o){sel=o;fresh=true}}
+ if(sel)drag={m:'mv',o:sel,q,ox:sel.x,oy:sel.y,fresh};opts();draw();return true}
+function engMove(q){const d=drag,o=d.o;
+ if(d.m=='ink'){const l=d.pts.at(-1);if(Math.hypot(q.x-l[0],q.y-l[1])>=.6*unit())d.pts.push([q.x,q.y]);return true}
+ if(d.m=='shape'){d.b=q;return true}
+ if(d.m=='mv'){o.x=d.ox+q.x-d.q.x;o.y=d.oy+q.y-d.q.y;return true}
+ if(d.m=='rot'){const[a,b]=ctr(o);let ang=Math.atan2(q.y-b,q.x-a)/D2R+90;ang=((ang+180)%360+360)%360-180;for(const s of[-180,-90,0,90,180])if(Math.abs(ang-s)<4)ang=s;o.a=Math.round(ang*10)/10;return true}
+ if(d.m=='rs'){const[dx,dy]=rotP(q.x-d.A.x,q.y-d.A.y,-RA(o)),sx=d.fx?1:-1,sy=d.fy?1:-1;let w=Math.max(4,dx*sx),h=Math.max(4,dy*sy);
+  if(o.k=='text'){o.size=Math.max(4,d.s0*w/d.w0);if(d.b0)o.bw=d.b0*w/d.w0;tm(o);w=o.w;h=o.h}else if(o.keep)h=w*(o.ar||o.h/o.w);
+  const[rx,ry]=rotP(sx*w/2,sy*h/2,RA(o));o.w=w;o.h=h;o.x=d.A.x+rx-w/2;o.y=d.A.y+ry-h/2;return true}
+ if(d.m=='rw'){const[dx]=rotP(q.x-d.A.x,q.y-d.A.y,-RA(o)),east=d.h==5;o.bw=Math.max(16,(east?dx:-dx)-d.off);tm(o);const[rx,ry]=rotP((east?1:-1)*o.w/2,o.h/2,RA(o));o.x=d.A.x+rx-o.w/2;o.y=d.A.y+ry-o.h/2;return true}
+ return false}
+function engUp(d){
+ if(d.m=='ink'){const hl=d.hl;E().ops.push(mkInk(d.pts,pen.w*unit()*(hl?6:1),pen.c,hl?.35:1,hl));return true}
+ if(d.m=='shape'){const lin=shp.t=='line'||shp.t=='arrow',dist=Math.hypot(d.b.x-d.a.x,d.b.y-d.a.y);if(dist<4*unit())return true;snap();const o=shapeFrom(d.a,d.b);E().ops.push(o);sel=o;setTool('sel');return true}
+ return false}
+/* ---- property helpers ---- */
+function setO(k,v,quiet){if(!sel)return;snapSoft(sel);sel[k]=v;draw();if(!quiet)opts()}
+function setA(v){if(!sel)return;snapSoft(sel);let a=+v||0;sel.a=((a+180)%360+360)%360-180;draw();opts()}
+function rot90(d){if(sel)setA((sel.a||0)+d)}
+function setOp(v){if(!sel)return;snapSoft(sel);sel.op=Math.max(.05,Math.min(1,v/100));draw()}
+function ord(dir){const e=E(),i=e.ops.indexOf(sel);if(i<0)return;snap();e.ops.splice(i,1);dir>0?e.ops.push(sel):e.ops.unshift(sel);draw()}
+function dupSel(){if(!sel)return;const e=E();snap();const o={...sel,x:sel.x+12*unit(),y:sel.y+12*unit()};e.ops.push(o);sel=o;opts();draw()}
+async function fxPx2(a,f){if(!(f.br||f.co||f.sa||f.hu||f.gr))return;const br=1+(f.br||0)/100,cn=1+(f.co||0)/100,sat=1+(f.sa||0)/100,hu=(f.hu||0)*D2R,cs=Math.cos(hu),sn=Math.sin(hu),
+ m=[.213+cs*.787-sn*.213,.715-cs*.715-sn*.715,.072-cs*.072+sn*.928,.213-cs*.213+sn*.143,.715+cs*.285+sn*.140,.072-cs*.072-sn*.283,.213-cs*.213-sn*.787,.715-cs*.715+sn*.715,.072+cs*.928+sn*.072],q=v=>v<0?0:v>255?255:v;
+ for(let i=0;i<a.length;i+=4){let r=a[i],g=a[i+1],b=a[i+2];
+  if(f.gr){const l=.299*r+.587*g+.114*b;r=g=b=l}
+  if(br!=1){r*=br;g*=br;b*=br}
+  if(cn!=1){r=(r-128)*cn+128;g=(g-128)*cn+128;b=(b-128)*cn+128}
+  if(sat!=1){const l=.299*r+.587*g+.114*b;r=l+(r-l)*sat;g=l+(g-l)*sat;b=l+(b-l)*sat}
+  if(hu){const R=r*m[0]+g*m[1]+b*m[2],Gc=r*m[3]+g*m[4]+b*m[5],B=r*m[6]+g*m[7]+b*m[8];r=R;g=Gc;b=B}
+  a[i]=q(r);a[i+1]=q(g);a[i+2]=q(b)}}
+async function doProc(o){const f=o.fx||{},tol=+o.tol||0,ink=o.ink||'';o.o0=o.o0||{im:o.im,bytes:o.bytes,type:o.type};
+ if(!tol&&!ink&&!(f.br||f.co||f.sa||f.hu||f.gr)){o.im=o.o0.im;o.bytes=o.o0.bytes;o.type=o.o0.type;draw();return}
+ const im=o.o0.im,W=im.naturalWidth||im.width,H=im.naturalHeight||im.height,c=mk(W,H),g=c.getContext('2d');
+ g.drawImage(im,0,0);const d=g.getImageData(0,0,W,H),a=d.data;fxPx2(a,f);
+ if(tol){const m=[[],[],[]];for(let i=0;i<40;i++)for(const[x,y]of[[i*W/40|0,0],[i*W/40|0,H-1],[0,i*H/40|0],[W-1,i*H/40|0]]){const k=(Math.min(H-1,y)*W+Math.min(W-1,x))*4;for(let j=0;j<3;j++)m[j].push(a[k+j])}
+  const bgc=m.map(v=>{v.sort((p,q)=>p-q);return v[v.length>>1]}),lo=tol*3,hi=tol*4.5;for(let i=0;i<a.length;i+=4){const x=Math.abs(a[i]-bgc[0])+Math.abs(a[i+1]-bgc[1])+Math.abs(a[i+2]-bgc[2]);a[i+3]=x<=lo?0:x<=hi?Math.round((x-lo)/(hi-lo)*a[i+3]):a[i+3]}}
+ if(ink){const r=parseInt(ink.slice(1,3),16),gg=parseInt(ink.slice(3,5),16),b=parseInt(ink.slice(5,7),16);for(let i=0;i<a.length;i+=4){a[i]=r;a[i+1]=gg;a[i+2]=b}}
+ g.putImageData(d,0,0);const url=c.toDataURL('image/png');o.im=await loadIm(url);o.bytes=u8(url);o.type='png';draw()}
+function imgProc(o){o=o||sel;if(!o||o.k!='img')return Promise.resolve();o._p=(o._p||Promise.resolve()).then(()=>doProc(o));return o._p}
+const setTol=v=>{if(sel&&sel.k=='img'){snapSoft(sel);sel.tol=+v;imgProc(sel)}};
+const setInk=v=>{if(sel&&sel.k=='img'){snapSoft(sel);sel.ink=v;imgProc(sel).then(opts)}};
+const setFx=(k,v)=>{if(sel&&sel.k=='img'){snapSoft(sel);sel.fx={...(sel.fx||{}),[k]:+v};imgProc(sel)}};
+const fxPreset=p=>{if(!sel||sel.k!='img')return;snapSoft(sel);sel.fx=p=='bw'?{gr:1,co:60}:p=='gray'?{gr:1}:{};if(!p)sel.ink='';imgProc(sel).then(opts)};
+async function sigInk(col){if(!aSig)return toast('Pick a signature first');const im=aSig.im,c=mk(im.naturalWidth||im.width,im.naturalHeight||im.height),g=c.getContext('2d');g.drawImage(im,0,0);const d=g.getImageData(0,0,c.width,c.height),a=d.data,r=parseInt(col.slice(1,3),16),gg=parseInt(col.slice(3,5),16),b=parseInt(col.slice(5,7),16);
+ for(let i=0;i<a.length;i+=4){a[i]=r;a[i+1]=gg;a[i+2]=b}g.putImageData(d,0,0);const url=c.toDataURL('image/png');aSig.im=await loadIm(url);aSig.bytes=u8(url);aSig.ink=col;opts();toast('Signature colour changed. Tap the page to place it.')}
+function commonBar(o){const pct=Math.round((o.op==null?1:o.op)*100),U=unit();let h='';
+ if(o.k=='ink'||o.k=='shape')h+=`<input type="color" value="${o.c.slice(0,7)}" oninput="setO('c',this.value,1)" title="Color"><label class="chk">Width<input type="range" min="0.5" max="40" step="0.5" value="${(o.lw/U).toFixed(1)}" oninput="setO('lw',this.value*unit(),1)"></label>`;
+ if(o.k=='shape')h+=`<label class="chk"><input type="checkbox" ${o.fill?'checked':''} onchange="setO('fill',this.checked?sel.c+'55':'')">Fill</label>`;
+
+ if(o.k=='img'){const f=o.fx||{};h+=`<label class="chk"><input type="checkbox" ${o.keep?'checked':''} onchange="setO('keep',this.checked,1)">Lock ratio</label><label class="chk">Transparent bg<input type="range" min="0" max="100" value="${o.tol||0}" onchange="setTol(this.value)"></label><label class="chk" title="Recolour every visible pixel. Best for signatures, stamps and logos. For a photo of a signature, use Transparent bg first.">Ink colour<input type="color" value="${o.ink||'#10206b'}" onchange="setInk(this.value)"></label>${o.ink?`<button onclick="setInk('')" title="Back to original colours">↺</button>`:''}<div class="seg"><button onclick="fxPreset('bw')" title="High-contrast black and white">B&amp;W</button><button onclick="fxPreset('gray')" title="Greyscale">Grey</button><button onclick="fxPreset('')" title="Reset colour changes">Reset</button></div>${[['br','Bright',-60,60],['co','Contrast',-60,100],['sa','Colour',-100,100],['hu','Hue',-180,180]].map(([k,l,mn,mx])=>`<label class="chk">${l}<input type="range" min="${mn}" max="${mx}" value="${f[k]||0}" onchange="setFx('${k}',this.value)"></label>`).join('')}`}
+ if(o.k=='text')h+=`<label class="chk"><input type="checkbox" ${o.bg?'checked':''} onchange="setO('bg',this.checked?'#ffffff':undefined)">Background</label>${o.bg?`<input type="color" value="${o.bg}" oninput="setO('bg',this.value,1)" title="Text background">`:''}`;
+ if(o.k!='cover')h+=`<div class="seg"><button onclick="rot90(-90)" title="Rotate left 90°">⟲</button><button onclick="rot90(90)" title="Rotate right 90°">⟳</button></div><label class="chk">Angle<input type="number" style="width:64px" value="${Math.round(o.a||0)}" onchange="setA(this.value)">°</label>`;
+ h+=`<label class="chk">Opacity<input type="range" min="5" max="100" value="${pct}" oninput="setOp(this.value)"></label><div class="seg"><button onclick="ord(1)" title="Bring to front">▲</button><button onclick="ord(-1)" title="Send to back">▼</button><button onclick="dupSel()" title="Duplicate (Ctrl+D)">⧉</button></div>`;return h}
+const SWS=['#10206b','#000000','#e11d48','#16a34a','#f59e0b'];
+function penBar(){return`<div class="seg"><button class="${pen.mode=='pen'?'on':''}" onclick="pen.mode='pen';if(pen.c=='#ffe600')pen.c='#10206b';opts()">Pencil</button><button class="${pen.mode=='hl'?'on':''}" onclick="pen.mode='hl';pen.c='#ffe600';opts()">Highlighter</button></div>${SWS.map(c=>`<button class="sw" style="background:${c}" onclick="pen.c='${c}';pen.mode='pen';opts()"></button>`).join('')}<input type="color" value="${pen.c}" oninput="pen.c=this.value" title="Color"><label class="chk">Thickness<input type="range" min="0.5" max="12" step="0.5" value="${pen.w}" oninput="pen.w=+this.value"></label>`}
+function shapeBar(){return`<div class="seg">${[['rect','▭'],['ellipse','◯'],['line','╱'],['arrow','➜']].map(([k,l])=>`<button class="${shp.t==k?'on':''}" onclick="shp.t='${k}';opts()" title="${k}">${l}</button>`).join('')}</div><input type="color" value="${shp.c}" oninput="shp.c=this.value" title="Color"><label class="chk">Width<input type="range" min="0.5" max="14" step="0.5" value="${shp.lw}" oninput="shp.lw=+this.value"></label><label class="chk"><input type="checkbox" ${shp.fill?'checked':''} onchange="shp.fill=this.checked">Fill</label>`}
+
 function draw(){const e=E();$('#empty').hidden=!!e;cv.hidden=!e||!bg;if(!e||!bg)return;
  if(cv.width!=bg.width||cv.height!=bg.height){cv.width=bg.width;cv.height=bg.height}
  cv.style.width=Math.max(60,($('#stage').clientWidth-32)*zoom)+'px';$('#zl').textContent=Math.round(zoom*100)+'%';cx.drawImage(bg,0,0);
- e.ops.forEach(o=>{if(o.k=='cover'){cx.fillStyle=o.c;cx.fillRect(o.x*S,o.y*S,o.w*S,o.h*S)}else if(o.k=='text'){tm(o);cx.fillStyle=o.c;cx.textBaseline='alphabetic';o.L.forEach((l,i)=>{const by=(o.y+o.size*.8+i*o.size*1.2)*S;cx.fillText(l,o.x*S,by);if(o.u)cx.fillRect(o.x*S,by+o.size*.1*S,cx.measureText(l).width,Math.max(1,o.size*.06*S))})}else cx.drawImage(o.im,o.x*S,o.y*S,o.w*S,o.h*S)});
+ e.ops.forEach(o=>drawObj(cx,o));
  const k=sc();
- if(sel&&e.ops.includes(sel)){tm(sel);cx.setLineDash([6*k,4*k]);cx.strokeStyle='#2563eb';cx.lineWidth=1.5*k;cx.strokeRect(sel.x*S,sel.y*S,sel.w*S,sel.h*S);cx.setLineDash([]);hpts(sel).forEach(([px_,py_])=>{const r=6*k,hx=px_*S,hy=py_*S;cx.fillStyle='#fff';cx.fillRect(hx-r,hy-r,2*r,2*r);cx.strokeRect(hx-r,hy-r,2*r,2*r)})}
+ if(sel&&e.ops.includes(sel))drawSel(cx,sel);drawLive(cx);
  if(drag&&drag.m=='rect'){const r=nr(drag.a,drag.b);cx.fillStyle='#2563eb22';cx.strokeStyle='#2563eb';cx.lineWidth=1.5*k;cx.fillRect(r.x*S,r.y*S,r.w*S,r.h*S);cx.strokeRect(r.x*S,r.y*S,r.w*S,r.h*S)}
  clearTimeout(draw.t);draw.t=setTimeout(thumbNow,350)}
 /* ---- undo ---- */
@@ -229,35 +379,27 @@ function snapSoft(t){const n=Date.now();if(lastSnap[0]!==t||n-lastSnap[1]>1500)s
 function undo(){const e=E();if(!e||!e.undo.length)return toast('Nothing to undo',1200);e.redo.push(cp(e.ops));e.ops=e.undo.pop();sel=null;opts();draw()}
 function redo(){const e=E();if(!e||!e.redo.length)return toast('Nothing to redo',1200);e.undo.push(cp(e.ops));e.ops=e.redo.pop();sel=null;opts();draw()}
 /* ---- pointer ---- */
-function handleAt(q,o){const r=13*sc()/S,p=hpts(o);for(let i=0;i<p.length;i++)if(Math.abs(q.x-p[i][0])<r&&Math.abs(q.y-p[i][1])<r)return i;return-1}
-function hover(e){const p=E();if(!p)return;if(tool!='sel'){cv.style.cursor=tool=='pan'?'grab':tool=='sig'?'copy':'crosshair';return}const q=pos(e);let c='default';if(sel&&p.ops.includes(sel)){const h=handleAt(q,sel);if(h>=0)c=h>3?'ew-resize':(h==0||h==3?'nwse-resize':'nesw-resize')}if(c=='default'){if([...p.ops].some(o=>(tm(o),q.x>=o.x&&q.x<=o.x+o.w&&q.y>=o.y&&q.y<=o.y+o.h)))c='move';else if(itemAt(q))c='pointer'}cv.style.cursor=c}
+function hover(e){const p=E();if(!p)return;const q=pos(e);let c=hoverCur(q,p);if(!c){if(tool=='sel'||tool=='edit')c=itemAt(q)?'pointer':'default';else c=tool=='pan'?'grab':tool=='sig'?'copy':'crosshair'}cv.style.cursor=c}
 cv.onpointerdown=e=>{const p=E();if(!p||tool=='pan')return;cv.setPointerCapture(e.pointerId);const q=pos(e);
- if(tool=='sel'){if(sel&&p.ops.includes(sel)){const h=handleAt(q,sel);if(h>=0){snap();const o=sel;tm(o);if(h>3)drag={m:'rw',o,h,ax:h==4?o.x+o.w:o.x,off:16*sc()/S};else{const[fx,fy]=HS[h];drag={m:'rs',o,h,ax:o.x+(1-fx)*o.w,ay:o.y+(1-fy)*o.h,s0:o.size,w0:o.w,b0:o.bw}}return}}
-  sel=[...p.ops].reverse().find(o=>(tm(o),q.x>=o.x&&q.x<=o.x+o.w&&q.y>=o.y&&q.y<=o.y+o.h))||null;let fresh=false;if(sel)snap();else{const it=itemAt(q);if(it){snap();sel=makeBox(lineOf(it));fresh=true;toast('Text is now a movable box',1600)}}if(sel)drag={m:'mv',o:sel,q,ox:sel.x,oy:sel.y,fresh};opts();draw()}
- else if(tool=='sig'){if(!aSig)return toast('Pick or create a signature first');snap();const w=p.w*.28;p.ops.push({k:'img',im:aSig.im,bytes:aSig.bytes,type:'png',x:q.x-w/2,y:q.y-w*aSig.ar/2,w,h:w*aSig.ar,ar:aSig.ar,keep:1});sel=p.ops.at(-1);setTool('sel')}
+ if(engDown(q))return;
+ if(tool=='sig'){if(!aSig)return toast('Pick or create a signature first');snap();const w=p.w*.28;p.ops.push({k:'img',im:aSig.im,bytes:aSig.bytes,type:'png',x:q.x-w/2,y:q.y-w*aSig.ar/2,w,h:w*aSig.ar,ar:aSig.ar,keep:1,a:0});sel=p.ops.at(-1);setTool('sel')}
  else drag={m:'rect',a:q,b:q}};
-cv.onpointermove=e=>{if(!drag){hover(e);return}const q=pos(e),o=drag.o;
- if(drag.m=='mv'){o.x=drag.ox+q.x-drag.q.x;o.y=drag.oy+q.y-drag.q.y}
- else if(drag.m=='rs'){const[fx,fy]=HS[drag.h];if(o.k=='text'){const nw=Math.max(6,Math.abs(q.x-drag.ax));o.size=Math.max(4,drag.s0*nw/drag.w0);if(drag.b0)o.bw=drag.b0*nw/drag.w0;tm(o);o.x=fx?drag.ax:drag.ax-o.w;o.y=fy?drag.ay:drag.ay-o.h}
-  else{const w=Math.max(4,Math.abs(q.x-drag.ax)),h=o.keep?w*o.ar:Math.max(4,Math.abs(q.y-drag.ay));o.w=w;o.h=h;o.x=Math.min(q.x,drag.ax);o.y=o.keep?(fy?drag.ay:drag.ay-h):Math.min(q.y,drag.ay)}}
- else if(drag.m=='rw'){const w=drag.h==4?Math.max(16,drag.ax-q.x-drag.off):Math.max(16,q.x-drag.off-drag.ax);o.bw=w;tm(o);o.x=drag.h==4?drag.ax-w:drag.ax}
- else drag.b=q;draw()};
-cv.onpointerup=cv.onpointercancel=async e=>{if(!drag)return;const d=drag;drag=null;if(d.m=='mv'){const o=d.o;if(Math.abs(o.x-d.ox)+Math.abs(o.y-d.oy)<.5){if(!d.fresh)E().undo.pop();if(lastTap.o===o&&Date.now()-lastTap.t<420){lastTap={};editSel()}else lastTap={o,t:Date.now()}}}
- if(d.m=='rs'||d.m=='mv'||d.m=='rw')opts();
+cv.onpointermove=e=>{if(!drag){hover(e);return}const q=pos(e);if(!engMove(q))drag.b=q;draw()};
+cv.onpointerup=cv.onpointercancel=async e=>{if(!drag)return;const d=drag;drag=null;
+ if(engUp(d)){opts();draw();return}
+ if(d.m=='mv'){const o=d.o;if(Math.abs(o.x-d.ox)+Math.abs(o.y-d.oy)<.5){if(!d.fresh)E().undo.pop();if(tool=='edit'&&o.k=='text'&&!dlgOpen()){snap();await editOp(o)}else if(!dlgOpen()&&lastTap.o===o&&Date.now()-lastTap.t<420){lastTap={};editSel()}else lastTap={o,t:Date.now()}}}
+ if(d.m=='rs'||d.m=='mv'||d.m=='rw'||d.m=='rot')opts();
  if(d.m=='rect'){const r=nr(d.a,d.b),tiny=r.w<3||r.h<3,pg_=E(),px={x:r.x*S,y:r.y*S,w:r.w*S,h:r.h*S};draw();
   if(tool=='erase'&&!tiny){snap();const c=hex(bgRect(px));(allp?pages:[pg_]).forEach(p=>{if(p!==pg_){p.undo.push(cp(p.ops));p.redo=[]}p.ops.push({k:'cover',x:r.x,y:r.y,w:r.w,h:r.h,c})});draw()}
-  else if(tool=='add'){const t=await askText('Add text','');if(t){snap();pg_.ops.push({k:'text',txt:t,x:d.a.x,y:d.a.y,size:td.size,c:td.c,f:td.f,b:td.b,i:td.i,u:td.u});sel=pg_.ops.at(-1);setTool('sel')}}
-  else if(tool=='edit'){const its=tiny?items.filter(i=>d.a.x*S>=i.x-2&&d.a.x*S<=i.x+i.w+2&&d.a.y*S>=i.base-i.size&&d.a.y*S<=i.base+i.size*.3).slice(0,1):items.filter(i=>{const cx_=i.x+i.w/2,cy=i.base-i.size*.3;return cx_>=px.x&&cx_<=px.x+px.w&&cy>=px.y&&cy<=px.y+px.h});if(!its.length)toast('No PDF text there. Use Add text for scanned pages.');else editItems(its)}
-  else if(tool=='photo'&&!tiny){pend=r;pf.value='';pf.click()}}draw()};
-async function editItems(its){its.sort((a,b)=>a.base-b.base||a.x-b.x);const ls=[];its.forEach(i=>{const l=ls.find(l=>Math.abs(l.b-i.base)<i.size*.4);l?l.a.push(i):ls.push({b:i.base,a:[i]})});
- const txt=ls.map(l=>l.a.map(i=>i.str).join('')).join('\n'),nt=await askText('Edit text',txt);if(nt===null)return;
- const x0=Math.min(...its.map(i=>i.x)),x1=Math.max(...its.map(i=>i.x+i.w)),y0=Math.min(...its.map(i=>i.base-i.size*.85)),y1=Math.max(...its.map(i=>i.base+i.size*.25)),u={x:x0-1,y:y0,w:x1-x0+2,h:y1-y0},f=its[0],e=E();
- snap();const c=hex(bgRect(u)),ink=inkColor(u);e.ops.push({k:'cover',x:u.x/S,y:u.y/S,w:u.w/S,h:u.h/S,c});
- if(nt.trim()){e.ops.push({k:'text',txt:nt,x:x0/S,y:(f.base-f.size*.8)/S,size:f.size/S,c:ink,f:f.fam,b:f.b,i:f.i,u:false});sel=e.ops.at(-1);setTool('sel')}else draw()}
+  else if(tool=='add'){snap();const op={k:'text',txt:'',x:d.a.x,y:d.a.y,size:td.size,c:td.c,f:td.f,b:td.b,i:td.i,u:td.u};pg_.ops.push(op);await editOp(op);if(sel)setTool('sel')}
+  else if(tool=='edit'){const its=tiny?items.filter(i=>d.a.x*S>=i.x-2&&d.a.x*S<=i.x+i.w+2&&d.a.y*S>=i.base-i.size&&d.a.y*S<=i.base+i.size*.3).slice(0,1):items.filter(i=>{const cx_=i.x+i.w/2,cy=i.base-i.size*.3;return cx_>=px.x&&cx_<=px.x+px.w&&cy>=px.y&&cy<=px.y+px.h});if(!its.length)toast('No PDF text there. Use Add text for scanned pages.');else await editItems(its)}
+  else if(tool=='photo'){pend=tiny?{x:d.a.x,y:d.a.y,place:1}:r;pf.value='';pf.click()}}draw()};
 async function dataImg(file,png){const bm=await createImageBitmap(file),k=Math.min(1,2000/Math.max(bm.width,bm.height)),c=mk(bm.width*k|0,bm.height*k|0),g=c.getContext('2d');if(!png){g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height)}g.drawImage(bm,0,0,c.width,c.height);return c}
 const u8=url=>b64(url.split(',')[1]);
 const loadIm=url=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.src=url});
-pf.onchange=async()=>{if(!pf.files[0]||!pend)return;const c=await dataImg(pf.files[0]),url=c.toDataURL('image/jpeg',.9),im=await loadIm(url),e=E();snap();e.ops.push({k:'img',im,bytes:u8(url),type:'jpg',x:pend.x,y:pend.y,w:pend.w,h:pend.h,ar:pend.h/pend.w});sel=e.ops.at(-1);pend=null;setTool('sel')};
+pf.onchange=async()=>{if(!pf.files[0]||!pend)return;const c=await dataImg(pf.files[0]),url=c.toDataURL('image/jpeg',.9),im=await loadIm(url),e=E();snap();const ar=im.height/im.width;let o;
+ if(pend.place){const w=Math.min(e.w*.4,e.w-20),h=w*ar;o={k:'img',im,bytes:u8(url),type:'jpg',x:pend.x-w/2,y:pend.y-h/2,w,h,ar,keep:1,a:0}}else o={k:'img',im,bytes:u8(url),type:'jpg',x:pend.x,y:pend.y,w:pend.w,h:pend.h,ar:pend.h/pend.w,a:0};
+ e.ops.push(o);sel=o;pend=null;setTool('sel')};
 /* ---- pages & thumbnails ---- */
 function go(i){if(i<0||i>=pages.length||i==cur)return;cur=i;sel=null;$('#side').classList.remove('open');show()}
 function zm(f){zoom=Math.min(5,Math.max(.4,zoom*f));draw()}function fit(){zoom=1;draw()}
@@ -270,7 +412,7 @@ function markThumbs(){[...$('#th').children].forEach((d,i)=>d.classList.toggle('
 function thumbNow(){const p=E();if(!p||!p.th||cv.hidden)return;const g=p.th.getContext('2d');g.drawImage(cv,0,0,p.th.width,p.th.height);p.thDone=1}
 function delSel(){const e=E();if(!sel)return;snap();e.ops=e.ops.filter(o=>o!==sel);sel=null;opts();draw()}
 function autoW(){if(!sel)return;snap();sel.bw=undefined;draw();opts()}
-async function editSel(){if(sel&&sel.k=='text'){const t=await askText('Edit text',sel.txt);if(t!==null){snap();sel.txt=t;draw()}}}
+async function editSel(){if(sel&&sel.k=='text'){snap();await editOp(sel)}}
 /* ---- watermark ---- */
 async function mod(fn){if(!bytes)return toast('Open a PDF first');toast('Working…',0);try{const d=await L.PDFDocument.load(bytes,{ignoreEncryption:true}),r=await fn(d);await loadBytes(await d.save());pages.forEach(p=>p.thDone=0);await show();thumbs();return r}catch(e){toast('Failed: '+e.message,5000)}}
 async function rmText(){const k=$('#kw').value.trim();if(!k)return toast('Type or pick the watermark text');const n=await mod(d=>removeWmDoc(d,k));if(n!==undefined)toast(n?`Removed ${n} watermark item(s)`:'No match. It may be an image: use Delete with “All pages”.',5000)}
@@ -279,17 +421,37 @@ async function scanWm(){if(!pdfDoc)return toast('Open a PDF first');toast('Scann
  cands=Object.keys(m).filter(s=>(N>1&&m[s]>=Math.max(2,N*.6))||big[s]).sort((a,b)=>(big[b]?1:0)-(big[a]?1:0)||m[b]-m[a]).slice(0,8);toast(cands.length?'Tap a suggestion below':'No obvious text watermark found');opts()}
 /* ---- export ---- */
 function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),9e3)}
-async function drawOps(dc,page,ops,H,ox,oy,skipCov,fnt){const rgb=h=>L.rgb(parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255);
- for(const o of ops){
-  if(o.k=='cover'){if(!skipCov)page.drawRectangle({x:ox+o.x,y:oy+H-o.y-o.h,width:o.w,height:o.h,color:rgb(o.c)})}
-  else if(o.k=='text'){const f=await fnt(dc,o);const set=f.getCharacterSet();const clean=[...o.txt].map(ch=>ch=='\n'||set.includes(ch.codePointAt(0))?ch:'?').join('');wrapT(clean,o.bw,s=>f.widthOfTextAtSize(s,o.size)).forEach((t,i)=>{const by=oy+H-(o.y+o.size*.8)-i*o.size*1.2;page.drawText(t,{x:ox+o.x,y:by,size:o.size,font:f,color:rgb(o.c)});
-   if(o.u&&t)page.drawLine({start:{x:ox+o.x,y:by-o.size*.12},end:{x:ox+o.x+f.widthOfTextAtSize(t,o.size),y:by-o.size*.12},thickness:Math.max(.4,o.size*.06),color:rgb(o.c)})})}
-  else{const im=o.type=='png'?await dc.embedPng(o.bytes):await dc.embedJpg(o.bytes);page.drawImage(im,{x:ox+o.x,y:oy+H-o.y-o.h,width:o.w,height:o.h})}}}
-async function exportPdf(){if(!bytes)return toast('Open a PDF first');toast('Building PDF…',0);try{
+function killTextDoc(d,idx,strs){const Lb=PDFLib,done=new Set(),page=d.getPages()[idx],c=page.node.Contents();if(!c)return done;
+ const by=s=>s instanceof Lb.PDFRawStream?Lb.decodePDFRawStream(s).decode():s.getContents();
+ const lat=u=>{let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return s};
+ const dec=b=>{let o='';b.replace(/\(((?:\\.|[^\\()])*)\)|<([0-9A-Fa-f\s]+)>/g,(m,a,h)=>{if(a!==undefined)o+=a.replace(/\\([0-7]{1,3}|.)/g,(q,x)=>/^[0-7]/.test(x)?String.fromCharCode(parseInt(x,8)):x);else{h=h.replace(/\s/g,'');for(let i=0;i+1<h.length;i+=2)o+=String.fromCharCode(parseInt(h.substr(i,2),16))}return m});return o.replace(/\0/g,'')};
+ const arr=c instanceof Lb.PDFArray?Array.from({length:c.size()},(_,i)=>c.lookup(i)):[c];let s=arr.map(x=>lat(by(x))).join('\n');
+ const want=new Set(strs.map(x=>x.trim())),cnt={},mk_=()=>/(\((?:\\.|[^\\()])*\)|<[0-9A-Fa-f\s]*>)\s*Tj|\[((?:\((?:\\.|[^\\()])*\)|<[0-9A-Fa-f\s]*>|[^\]\(<])*)\]\s*TJ/g;
+ let m;const r1=mk_();while((m=r1.exec(s))){const t=dec(m[1]!==undefined?m[1]:m[2]).trim();if(want.has(t))cnt[t]=(cnt[t]||0)+1}
+ s=s.replace(mk_(),(all,a,b)=>{const t=dec(a!==undefined?a:b).trim();if(want.has(t)&&cnt[t]==1){done.add(t);return '3 Tr '+all+' 0 Tr'}return all});
+ if(done.size){const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i)&255;page.node.set(Lb.PDFName.of('Contents'),d.context.register(d.context.flateStream(u)))}return done}
+async function drawOps(dc,page,ops,H,ox,oy,skipCov,fnt){const rgb=h=>L.rgb(parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255),PX=g=>({x:ox+g.x,y:oy+H-g.y});
+ for(const o of ops){const op=o.op==null?1:o.op;
+  if(o.k=='cover'){if(!skipCov&&!o.gone)page.drawRectangle({x:ox+o.x,y:oy+H-o.y-o.h,width:o.w,height:o.h,color:rgb(o.c)});continue}
+  const deg=L.degrees(-(o.a||0));
+  if(o.k=='text'){const f=await fnt(dc,o),set=f.getCharacterSet(),clean=[...o.txt].map(ch=>ch=='\n'||set.includes(ch.codePointAt(0))?ch:'?').join('');
+   if(o.bg){tm(o);const p=o.size*.15,P=PX(toGlob(o,-p,o.h+p*.4));page.drawRectangle({x:P.x,y:P.y,width:o.w+2*p,height:o.h+p*.8,color:rgb(o.bg),rotate:deg,opacity:op})}
+   wrapT(clean,o.bw,s=>f.widthOfTextAtSize(s,o.size)).forEach((t,i)=>{const ly=o.size*.8+i*o.size*1.2,P=PX(toGlob(o,0,ly));page.drawText(t,{x:P.x,y:P.y,size:o.size,font:f,color:rgb(o.c),rotate:deg,opacity:op});
+    if(o.u&&t){const w=f.widthOfTextAtSize(t,o.size);page.drawLine({start:PX(toGlob(o,0,ly+o.size*.12)),end:PX(toGlob(o,w,ly+o.size*.12)),thickness:Math.max(.4,o.size*.06),color:rgb(o.c),opacity:op})}})}
+  else if(o.k=='img'){const im=o.type=='png'?await dc.embedPng(o.bytes):await dc.embedJpg(o.bytes),P=PX(toGlob(o,0,o.h));page.drawImage(im,{x:P.x,y:P.y,width:o.w,height:o.h,rotate:deg,opacity:op})}
+  else if(o.k=='shape'){const fc=o.fill?rgb(o.fill.slice(0,7)):undefined,fo=o.fill?op*.33:undefined;
+   if(o.shape=='ellipse'){const P=PX(toGlob(o,o.w/2,o.h/2));page.drawEllipse({x:P.x,y:P.y,xScale:Math.max(.5,o.w/2-o.lw/2),yScale:Math.max(.5,o.h/2-o.lw/2),rotate:deg,borderColor:rgb(o.c),borderWidth:o.lw,borderOpacity:op,color:fc,opacity:fo})}
+   else{const P=PX(toGlob(o,o.lw/2,o.h-o.lw/2));page.drawRectangle({x:P.x,y:P.y,width:Math.max(1,o.w-o.lw),height:Math.max(1,o.h-o.lw),rotate:deg,borderColor:rgb(o.c),borderWidth:o.lw,borderOpacity:op,color:fc,opacity:fo})}}
+  else if(o.k=='ink'){const G=o.pts.map(p=>toGlob(o,p[0]*o.w,p[1]*o.h));
+   if(G.length==1){const P=PX(G[0]);page.drawCircle({x:P.x,y:P.y,size:o.lw/2,color:rgb(o.c),opacity:op})}
+   else{let d=`M ${G[0].x} ${G[0].y}`;for(let i=1;i<G.length-1;i++)d+=` Q ${G[i].x} ${G[i].y} ${(G[i].x+G[i+1].x)/2} ${(G[i].y+G[i+1].y)/2}`;d+=` L ${G.at(-1).x} ${G.at(-1).y}`;
+    page.drawSvgPath(d,{x:ox,y:oy+H,borderColor:rgb(o.c),borderWidth:o.lw,borderOpacity:op,borderLineCap:o.hl?L.LineCapStyle.Butt:L.LineCapStyle.Round});
+    if(o.arrow&&G.length==2){const an=Math.atan2(G[1].y-G[0].y,G[1].x-G[0].x),Ln=Math.max(o.lw*4,9);for(const s of[-.45,.45])page.drawLine({start:PX(G[1]),end:PX({x:G[1].x-Ln*Math.cos(an+s),y:G[1].y-Ln*Math.sin(an+s)}),thickness:o.lw,color:rgb(o.c),opacity:op,lineCap:L.LineCapStyle.Round})}}}}}
+async function exportPdf(){if(dlgOpen())dlgDone($('#dta').value);if(!bytes)return toast('Open a PDF first');toast('Building PDF…',0);try{
  const d=await L.PDFDocument.load(bytes,{ignoreEncryption:true}),sp=d.getPages(),out=await L.PDFDocument.create();d.registerFontkit(fontkit);out.registerFontkit(fontkit);
- const fcache={},fnt=(dc,o)=>{const F=FAM[o.f],k=(dc===d?'d':'o')+o.f+fk(o.b,o.i);if(!fcache[k]){fcache[k]=F.std?dc.embedFont(L.StandardFonts[F.std[(o.b?1:0)+(o.i?2:0)]]):dc.embedFont(fileOf(o.f,o.b,o.i)?b64(fileOf(o.f,o.b,o.i)):L.StandardFonts.Helvetica,{subset:true})}return fcache[k]};
+ const fcache={},fnt=(dc,o)=>{const F=FAM[o.f],k=(dc===d?'d':'o')+o.f+fk(o.b,o.i);if(!fcache[k]){fcache[k]=F.bytes?dc.embedFont(F.bytes,{subset:true}).catch(()=>dc.embedFont(L.StandardFonts.Helvetica)):F.std?dc.embedFont(L.StandardFonts[F.std[(o.b?1:0)+(o.i?2:0)]]):dc.embedFont(fileOf(o.f,o.b,o.i)?b64(fileOf(o.f,o.b,o.i)):L.StandardFonts.Helvetica,{subset:true})}return fcache[k]};
  const sec=$('#secure').checked,flat=pages.map(p=>sec&&p.src!=null&&p.ops.some(o=>o.k=='cover'));
- for(let i=0;i<pages.length;i++){const p=pages[i];if(p.src!=null&&!flat[i]){const px=sp[p.src],cb=px.getCropBox();await drawOps(d,px,p.ops,cb.height,cb.x,cb.y,false,fnt)}}
+ for(let i=0;i<pages.length;i++){const p=pages[i];if(p.src!=null&&!flat[i]){const px=sp[p.src],cb=px.getCropBox();if(trEdit){const kills=p.ops.filter(o=>o.k=='cover'&&o.kill&&o.kill.length),strs=[...new Set(kills.flatMap(o=>o.kill))];if(strs.length){const done=killTextDoc(d,p.src,strs);kills.forEach(o=>{o.gone=o.kill.every(s=>done.has(s.trim()))})}}else p.ops.forEach(o=>{if(o.k=='cover')o.gone=false});await drawOps(d,px,p.ops,cb.height,cb.x,cb.y,false,fnt)}}
  const cpg=await out.copyPages(d,pages.filter((p,i)=>p.src!=null&&!flat[i]).map(p=>p.src));let ci=0;
  for(let i=0;i<pages.length;i++){const p=pages[i];let page;
   if(p.src!=null&&!flat[i])page=out.addPage(cpg[ci++]);
@@ -309,27 +471,31 @@ function addSig(u){sigs.unshift(u);sigs=sigs.slice(0,8);try{localStorage.setItem
 async function useSig(i){const im=await loadIm(sigs[i]);aSig={im,ar:im.height/im.width,bytes:u8(sigs[i]),i};opts()}
 function delSigSaved(i){sigs.splice(i,1);try{localStorage.setItem('sigs2',JSON.stringify(sigs))}catch(e){}aSig=null;opts()}
 /* ---- UI ---- */
-const TOOLS=[['pan','Pan'],['sel','Select'],['edit','Edit text'],['add','Add text'],['erase','Delete'],['photo','Image'],['sig','Sign'],['wm','Watermark']];
+const TOOLS=[['pan','Pan'],['sel','Select'],['edit','Edit text'],['add','Add text'],['pen','Draw'],['shape','Shapes'],['erase','Delete'],['photo','Image'],['sig','Sign'],['wm','Watermark']];
 function rail(){$('#rail').innerHTML=TOOLS.map(([k,l])=>`<button class="${tool==k?'on':''}" onclick="setTool('${k}')" title="${l}">${ic(k=='photo'?'image':k=='add'?'text':k)}${l}</button>`).join('')}
-function setTool(k){tool=k;if(k!='sel')sel=null;rail();opts();draw();cv.style.touchAction=k=='pan'?'auto':'none'}
-const T=()=>tool=='sel'&&sel&&sel.k=='text'?sel:td;
-function setP(k,v,rel){const t=T();if(t!==td)snapSoft(t);if(k=='size'){v=Math.max(4,Math.min(400,rel?Math.round((t.size+v)*2)/2:(+v||t.size)))}t[k]=v;if(k=='f'&&!hasI(v))t.i=false;if(t!==td)draw();if(k!='c')opts()}
+function setTool(k){if(dlgOpen())dlgDone($('#dta').value);tool=k;if(k!='sel')sel=null;rail();opts();draw();cv.style.touchAction=k=='pan'?'auto':'none'}
+const T=()=>(tool=='sel'||tool=='edit')&&sel&&sel.k=='text'?sel:td;
+function setP(k,v,rel){const t=T();if(t!==td)snapSoft(t);if(k=='size'){v=Math.max(4,Math.min(400,rel?Math.round((t.size+v)*2)/2:(+v||t.size)))}t[k]=v;if(k=='f'){if(!hasI(v))t.i=false;if(!hasB(v))t.b=false}if(t!==td)draw();if(k!='c')opts()}
 const tog=k=>setP(k,!T()[k]);
-function textBar(o){const F=o.f;return`<select onchange="setP('f',this.value)" title="Font">${Object.keys(FAM).map(f=>`<option ${f==F?'selected':''}>${f}</option>`).join('')}</select>
+function textBar(o){const F=o.f;return`<select onchange="setP('f',this.value)" title="Font">${fopts(F)}</select>
 <div class="step"><button onclick="setP('size',-1,1)" title="Smaller">−</button><input type="number" value="${Math.round(o.size*10)/10}" min="4" max="400" onchange="setP('size',this.value)" title="Size (pt)"><button onclick="setP('size',1,1)" title="Larger">+</button></div>
-<div class="seg"><button class="${o.b?'on':''}" onclick="tog('b')" title="Bold"><b>B</b></button><button class="${o.i?'on':''}" ${hasI(F)?'':'disabled style="opacity:.35;cursor:default"'} onclick="tog('i')" title="Italic"><i style="font-family:serif">I</i></button><button class="${o.u?'on':''}" onclick="tog('u')" title="Underline"><u>U</u></button></div>
-<input type="color" value="${o.c}" oninput="setP('c',this.value)" title="Text color">`}
+<div class="seg"><button class="${o.b?'on':''}" onclick="tog('b')" ${hasB(F)?'':'disabled style="opacity:.35;cursor:default"'} title="Bold"><b>B</b></button><button class="${o.i?'on':''}" ${hasI(F)?'':'disabled style="opacity:.35;cursor:default"'} onclick="tog('i')" title="Italic"><i style="font-family:serif">I</i></button><button class="${o.u?'on':''}" onclick="tog('u')" title="Underline"><u>U</u></button></div>
+<input type="color" value="${o.c}" oninput="setP('c',this.value)" title="Text color"><button class="btn" onclick="$('#ffi').click()" title="Add a font file (.ttf .otf .woff)">${ic('plus')}Font</button>${o.orig?`<span class="hint" title="Detected from the PDF">Original: ${esc(o.orig)}</span>`:''}`}
+function fopts(F){const ks=Object.keys(FAM),o=k=>`<option ${k==F?'selected':''}>${esc(k)}</option>`,cu=ks.filter(k=>FAM[k].custom);return ks.filter(k=>!FAM[k].custom).map(o).join('')+(cu.length?`<optgroup label="My fonts">${cu.map(o).join('')}</optgroup>`:'')}
 function opts(){let h='',card='';const H=t=>`<span class="hint">${t}</span>`;
  if(tool=='pan')h=H('Drag to scroll. Pinch to zoom.');
- else if(tool=='sel')h=sel?(sel.k=='text'?textBar(sel)+`<button class="btn" onclick="editSel()">${ic('edit')}Edit text</button>${sel.bw?`<button class="btn" onclick="autoW()">Auto width</button>`:''}`:'')+`<button class="btn" onclick="delSel()">${ic('trash')}Remove</button>`:H('Tap any text or item to select it. Drag to move · corners resize · side handles set box width · double-tap to edit · arrow keys nudge');
- else if(tool=='edit')h=H('Tap a line of text to rewrite it, or drag across several lines. Font style is matched automatically.');
+
+ else if(tool=='sel')h=sel?(sel.k=='text'?textBar(sel)+`<button class="btn" onclick="editSel()">${ic('edit')}Edit text</button>${sel.bw?`<button class="btn" onclick="autoW()">Auto width</button>`:''}`:'')+commonBar(sel)+`<button class="btn" onclick="delSel()">${ic('trash')}Remove</button>`:H('Tap any item to select it. Drag to move · corners resize · round handle rotates · double-tap text to edit · arrow keys nudge');
+ else if(tool=='edit'){h=(sel&&sel.k=='text'?textBar(sel):'')+H('Tap a line to copy it into the editor, or drag across several lines.')+`<button class="btn" onclick="showFonts=!showFonts;opts()">Fonts on this page</button><label class="chk" title="When the PDF allows it, the original text is hidden inside the file instead of covered with a colour patch, so photos and gradients show through"><input type="checkbox" ${trEdit?'checked':''} onchange="trEdit=this.checked"> Transparent edit</label>`;if(showFonts){const seen={};items.forEach(i=>{const k=i.orig||'(unnamed font)';(seen[k]=seen[k]||{n:0,m:i}).n++});card=`<h4>Fonts detected on this page</h4>${Object.entries(seen).map(([k,v])=>`<div class="frow"><b>${esc(k)}</b><span>${v.m.exact?'exact match':'→ '+esc(v.m.fam)+(v.m.b?' Bold':'')+(v.m.i?' Italic':'')}</span></div>`).join('')||'<p class="hint">No text found. This looks like a scan.</p>'}<div class="row"><button class="btn" onclick="$('#ffi').click()">Add exact font file…</button></div><p class="hint">PDFs only keep the letters they use, so the original font can’t be reused for new text. Add the font file (.ttf .otf .woff) and it is matched automatically.</p>`}}
+ else if(tool=='pen')h=penBar()+H('Draw or sign directly on the page');
+ else if(tool=='shape')h=shapeBar()+H('Drag on the page to draw');
  else if(tool=='add')h=textBar(td)+H('Then tap where the text goes');
  else if(tool=='erase')h=H('Drag a box over text or a logo to remove it')+`<label class="chk"><input type="checkbox" ${allp?'checked':''} onchange="allp=this.checked"> Apply to all pages</label>`;
- else if(tool=='photo')h=H('Drag a box over a photo, then choose its replacement');
- else if(tool=='sig'){h=H(aSig?'Tap the page to place your signature':'Create a signature first');card=`<h4>Signatures</h4><div class="row" style="margin-top:0">${sigs.map((s,i)=>`<img src="${s}" class="th2 ${aSig&&aSig.i==i?'on':''}" onclick="useSig(${i})">`).join('')}<button class="btn" onclick="$('#sg').classList.add('show')">${ic('plus')}New</button>${aSig?`<button class="btn ib" onclick="delSigSaved(${aSig.i})" title="Delete signature">${ic('trash')}</button>`:''}</div><p class="hint">To replace a signature, remove the old one with Delete first.</p>`}
+ else if(tool=='photo')h=H('Tap to add an image · drag a box over a photo to replace it');
+ else if(tool=='sig'){h=H(aSig?'Tap the page to place your signature':'Create a signature first');card=`<h4>Signatures</h4><div class="row" style="margin-top:0">${sigs.map((s,i)=>`<img src="${s}" class="th2 ${aSig&&aSig.i==i?'on':''}" onclick="useSig(${i})">`).join('')}<button class="btn" onclick="$('#sg').classList.add('show')">${ic('plus')}Draw new</button><button class="btn" onclick="si.click()" title="Import a photo of your signature or a stamp. The paper becomes transparent.">${ic('image')}Import image</button><label class="chk" title="Change the signature colour before placing it">Ink<input type="color" value="${aSig&&aSig.ink||'#10206b'}" onchange="sigInk(this.value)"></label>${aSig?`<button class="btn ib" onclick="delSigSaved(${aSig.i})" title="Delete signature">${ic('trash')}</button>`:''}</div><p class="hint">To replace a signature, remove the old one with Delete first.</p>`}
  else if(tool=='wm'){h=H('Remove watermarks from the PDF itself');card=`<h4>Watermark removal</h4><button class="btn" onclick="scanWm()">Find watermark text</button><div class="row">${cands.map((c,i)=>`<span class="chip" onclick="$('#kw').value=cands[${i}]">${c.replace(/[<&]/g,'')}</span>`).join('')}</div><div class="row"><input type="text" id="kw" placeholder="Watermark text" style="flex:1;min-width:140px"><button class="btn pri" onclick="rmText()">Remove text</button></div><div class="row"><button class="btn" onclick="rmAnn()">Remove stamps</button></div><p class="hint">Image watermark? Use Delete with “Apply to all pages”.</p>`}
  $('#props').innerHTML=h;const c=$('#card');c.innerHTML=card;c.style.display=card?'block':'none'}
-document.onkeydown=e=>{const typing=/INPUT|SELECT|TEXTAREA/.test(e.target.tagName);if(typing)return;if(sel&&/^Arrow/.test(e.key)){e.preventDefault();const d=e.shiftKey?10:1;snapSoft(sel);if(e.key=='ArrowLeft')sel.x-=d;if(e.key=='ArrowRight')sel.x+=d;if(e.key=='ArrowUp')sel.y-=d;if(e.key=='ArrowDown')sel.y+=d;draw();return}if((e.key=='Delete'||e.key=='Backspace')&&sel)delSel();if((e.ctrlKey||e.metaKey)&&e.key=='z'){e.preventDefault();undo()}if((e.ctrlKey||e.metaKey)&&e.key=='y'){e.preventDefault();redo()}if(e.key=='PageDown')go(cur+1);if(e.key=='PageUp')go(cur-1)};
+document.onkeydown=e=>{const typing=/INPUT|SELECT|TEXTAREA/.test(e.target.tagName);if(typing)return;if(sel&&/^Arrow/.test(e.key)){e.preventDefault();const d=e.shiftKey?10:1;snapSoft(sel);if(e.key=='ArrowLeft')sel.x-=d;if(e.key=='ArrowRight')sel.x+=d;if(e.key=='ArrowUp')sel.y-=d;if(e.key=='ArrowDown')sel.y+=d;draw();return}if((e.key=='Delete'||e.key=='Backspace')&&sel)delSel();if((e.ctrlKey||e.metaKey)&&e.key=='z'){e.preventDefault();undo()}if((e.ctrlKey||e.metaKey)&&e.key=='y'){e.preventDefault();redo()}if((e.ctrlKey||e.metaKey)&&e.key=='d'){e.preventDefault();dupSel()}if(e.key=='PageDown')go(cur+1);if(e.key=='PageUp')go(cur-1)};
 addEventListener('resize',draw);$('#stage').ondragover=e=>e.preventDefault();$('#stage').ondrop=e=>{e.preventDefault();fi.files=e.dataTransfer.files;fi.onchange()};
-rail();opts();draw();loadFonts().then(draw);
+rail();opts();draw();loadFonts().then(loadUserFonts).then(draw);
 </script></body></html>
