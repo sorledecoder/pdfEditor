@@ -28,6 +28,25 @@
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     };
     var say = function (m, t) { if (typeof toast === 'function') toast(m, t); else alert(m); };
+    async function why() {
+      if (!window.isSecureContext) return 'This page is not on https. Install only works on https (or localhost).';
+      if (!('serviceWorker' in navigator)) return 'This browser has no service-worker support. Use Chrome or Edge.';
+      try {
+        var link = document.querySelector('link[rel=manifest]');
+        var r = await fetch(link.href, { cache: 'no-cache' });
+        if (!r.ok) return 'manifest.json not found (error ' + r.status + '). Upload it next to index.html.';
+        var m = await r.json();
+        for (var ic of (m.icons || [])) {
+          if (!/png/.test(ic.type || '')) continue;
+          var rr = await fetch(new URL(ic.src, link.href), { cache: 'no-cache' });
+          if (!rr.ok) return 'Icon ' + ic.src + ' is missing (error ' + rr.status + '). Upload it next to index.html.';
+        }
+      } catch (e) { return 'manifest.json is missing or invalid.'; }
+      var reg = await navigator.serviceWorker.getRegistration();
+      if (!reg) return 'sw.js is not registered. Make sure sw.js is uploaded next to index.html, then reload.';
+      if (!navigator.serviceWorker.controller) return 'Offline engine is still starting. Reload the page once, then tap Install again.';
+      return 'Everything is set up, but the browser has not offered install. If you installed it before, open it from your apps or home screen. Otherwise use the browser menu (⋮) then Install app.';
+    }
     function paint() {
       var b = $i('install-btn'); if (!b) return;
       var sp = b.querySelectorAll('span');
@@ -45,7 +64,7 @@
         if (standalone()) return say('PDF Editor is already installed on this device', 3000);
         if (dp) { dp.prompt(); dp.userChoice.then(function () { dp = null; }); }
         else if (ios()) say('Tap the Share button, then "Add to Home Screen"', 7000);
-        else say('Open the browser menu (⋮) and tap "Install app" or "Add to Home screen". The page must be opened over https.', 8000);
+        else { say('Checking why install is not offered…', 0); why().then(function (m) { say(m, 10000); }); }
       });
       paint();
     });
